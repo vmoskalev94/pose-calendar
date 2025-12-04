@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/posecalendar
+    username: posecalendar
+    password: posecalendar
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+logging:
+  level:
+    org.flywaydb.core: INFO

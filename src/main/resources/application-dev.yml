@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/posecalendar_dev;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  h2:
+    console:
+      enabled: true # http://localhost:8080/h2-console
+      path: /h2-console
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
