@@ -6,6 +6,7 @@ import type {
   ReleaseDto,
   CalendarEventDto,
   PackStatus,
+  PackType,
 } from "./types";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -46,6 +47,26 @@ async function getPacks(status?: PackStatus): Promise<PackDto[]> {
   return request<PackDto[]>(url);
 }
 
+async function createPack(payload: {
+  nameRu: string;
+  nameEn: string | null;
+  type: PackType;
+  posesCount: number | null;
+  couplePosesCount: number | null;
+  tags: string | null;
+  description: string | null;
+  sourceDir: string | null;
+  screensDir: string | null;
+  coverFile: string | null;
+  packageFile: string | null;
+}): Promise<PackDto> {
+  return request<PackDto>("/api/packs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
 async function getChecklist(packId: number): Promise<ChecklistItemDto[]> {
   return request<ChecklistItemDto[]>(`/api/packs/${packId}/checklist`);
 }
@@ -58,6 +79,30 @@ async function toggleChecklistItemDone(
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ done }),
+  });
+}
+
+async function createRelease(params: {
+  packId: number;
+  releaseDateTimeIso: string;
+  telegramPlanned: boolean;
+  vkPlanned: boolean;
+  boostyPlanned: boolean;
+  tumblrPlanned: boolean;
+}): Promise<ReleaseDto> {
+  const { packId, releaseDateTimeIso, telegramPlanned, vkPlanned, boostyPlanned, tumblrPlanned } =
+    params;
+
+  return request<ReleaseDto>(`/api/packs/${packId}/releases`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      releaseDateTime: releaseDateTimeIso,
+      telegramPlanned,
+      vkPlanned,
+      boostyPlanned,
+      tumblrPlanned,
+    }),
   });
 }
 
@@ -79,4 +124,6 @@ export const Api = {
   toggleChecklistItemDone,
   getReleasesForPack,
   getCalendarEvents,
+  createPack,
+  createRelease,
 };
