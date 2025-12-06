@@ -8,6 +8,7 @@ public class PoseCalendarApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PoseCalendarApplication.class, args);
+        System.out.println("cd frontend\nnpm run dev\nhttp://localhost:5173/");
     }
 
 }
