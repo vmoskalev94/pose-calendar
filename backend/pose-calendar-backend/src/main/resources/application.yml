@@ -1,0 +1,34 @@
+spring:
+  profiles:
+    # по умолчанию используем профиль dev
+    default: dev
+
+  application:
+    name: pose-calendar-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pose_calendar_dev
+    username: pose_calendar
+    password: pose_calendar
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # для dev
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

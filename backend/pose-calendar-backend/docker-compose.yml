@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: pose-calendar-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pose_calendar_dev
+      POSTGRES_USER: pose_calendar
+      POSTGRES_PASSWORD: pose_calendar
+    ports:
+      - "5432:5432"
+    volumes:
+      - pose-calendar-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pose_calendar -d pose_calendar_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pose-calendar-pg-data:
