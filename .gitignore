@@ -1,0 +1,14 @@
+# IntelliJ
+.idea/
+
+# VS Code
+.vscode/
+
+# Backend
+backend/target/
+backend/.mvn/
+backend/.gradle/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
