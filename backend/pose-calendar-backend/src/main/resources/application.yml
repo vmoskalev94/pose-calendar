@@ -32,3 +32,11 @@ logging:
     root: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+posecalendar:
+  security:
+    jwt:
+      # dev-секрет, потом можно будет вынести в env
+      secret: "change-me-this-is-a-very-long-dev-secret-key-123456"
+      # 30 дней
+      expiration-minutes: 43200

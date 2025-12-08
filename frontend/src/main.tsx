@@ -1,18 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import AppPage from './pages/AppPage';
+import {BrowserRouter} from 'react-router-dom';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {MantineProvider} from '@mantine/core';
+import '@mantine/core/styles.css';
 import './index.css';
+import App from './app/App';
+import {AuthProvider} from './features/auth/AuthContext';
+
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/app" element={<AppPage />} />
-        <Route path="*" element={<LoginPage />} />
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>
+    <React.StrictMode>
+        <QueryClientProvider client={queryClient}>
+            <MantineProvider>
+                <AuthProvider>
+                    <BrowserRouter>
+                        <App/>
+                    </BrowserRouter>
+                </AuthProvider>
+            </MantineProvider>
+        </QueryClientProvider>
+    </React.StrictMode>
 );
