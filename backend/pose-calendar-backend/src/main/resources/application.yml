@@ -40,3 +40,8 @@ posecalendar:
       secret: "change-me-this-is-a-very-long-dev-secret-key-123456"
       # 30 дней
       expiration-minutes: 43200
+  storage:
+    # Базовая директория локального файлового хранилища.
+    # Может быть относительным или абсолютным путём.
+    # В dev — относительно корня backend-приложения:
+    base-path: ./storage
