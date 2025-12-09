@@ -17,8 +17,18 @@ import {
     updatePack,
     updatePackTask,
 } from './api';
+import {
+    fetchPackFiles,
+    uploadPackFile,
+    deletePackFile,
+} from './api';
+import type {PackFile, PackFileType} from './model';
+
 
 export const PACKS_QUERY_KEY = ['packs'] as const;
+
+export const packFilesKey = (packId: number) =>
+    [...PACKS_QUERY_KEY, packId, 'files'] as const;
 
 export const packDetailsKey = (packId: number) =>
     [...PACKS_QUERY_KEY, packId] as const;
@@ -120,6 +130,60 @@ export function useToggleTaskMutation() {
                 queryKey: packDetailsKey(variables.packId),
             });
             queryClient.invalidateQueries({queryKey: PACKS_QUERY_KEY});
+        },
+    });
+}
+
+export function usePackFilesQuery(packId: number | null, enabled = true) {
+    return useQuery<PackFile[]>({
+        queryKey:
+            packId != null
+                ? packFilesKey(packId)
+                : [...PACKS_QUERY_KEY, 'files', 'none'],
+        queryFn: () => {
+            if (packId == null) {
+                return Promise.resolve([] as PackFile[]);
+            }
+            return fetchPackFiles(packId);
+        },
+        enabled: enabled && packId != null,
+    });
+}
+
+interface UploadPackFilePayload {
+    fileType: PackFileType;
+    file: File;
+}
+
+export function useUploadPackFileMutation(packId: number | null) {
+    const queryClient = useQueryClient();
+
+    return useMutation<PackFile, Error, UploadPackFilePayload>({
+        mutationFn: async ({fileType, file}) => {
+            if (packId == null) {
+                throw new Error('Pack id is required to upload files');
+            }
+            return uploadPackFile(packId, fileType, file);
+        },
+        onSuccess: () => {
+            if (packId != null) {
+                queryClient.invalidateQueries({queryKey: packFilesKey(packId)});
+            }
+        },
+    });
+}
+
+export function useDeletePackFileMutation(packId: number | null) {
+    const queryClient = useQueryClient();
+
+    return useMutation<void, Error, string>({
+        mutationFn: async (fileId: string) => {
+            await deletePackFile(fileId);
+        },
+        onSuccess: () => {
+            if (packId != null) {
+                queryClient.invalidateQueries({queryKey: packFilesKey(packId)});
+            }
         },
     });
 }

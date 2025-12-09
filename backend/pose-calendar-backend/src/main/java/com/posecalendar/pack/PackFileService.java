@@ -75,6 +75,14 @@ public class PackFileService {
         return fileStorageService.load(packFile.getStoragePath());
     }
 
+    @Transactional(readOnly = true)
+    public StoredFile getFileContentPublic(UUID fileId) {
+        PackFile packFile = packFileRepository.findById(fileId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found"));
+
+        return fileStorageService.load(packFile.getStoragePath());
+    }
+
     @Transactional
     public void deleteFile(UUID fileId, User currentUser) {
         PackFile packFile = findUserFileOrThrow(fileId, currentUser);

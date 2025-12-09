@@ -66,9 +66,8 @@ public class PackFileController {
     /**
      * Скачивание файла пака.
      */
-    @GetMapping("/files/{fileId}")
-    public ResponseEntity<Resource> downloadFile(
-            @PathVariable("fileId") UUID fileId
+    @GetMapping(value = "/files/{fileId}", produces = MediaType.ALL_VALUE)
+    public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") UUID fileId
     ) {
         User currentUser = getCurrentUser();
 

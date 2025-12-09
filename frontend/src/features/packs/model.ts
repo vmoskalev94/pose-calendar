@@ -72,3 +72,41 @@ export interface PackTaskUpdateRequest {
     title?: string;
     completed?: boolean;
 }
+
+// ------- Files attached to Pack -------
+
+export type PackFileType =
+    | 'COVER'
+    | 'PREVIEW'
+    | 'SCREENSHOT'
+    | 'ARCHIVE'
+    | 'INSTRUCTION'
+    | 'EXTRA';
+
+export interface PackFile {
+    id: string;
+    fileType: PackFileType;
+    originalFilename: string;
+    contentType: string | null;
+    sizeBytes: number;
+    createdAt: string; // ISO-строка, как приходит с бэка
+}
+
+export const PACK_FILE_TYPE_LABELS: Record<PackFileType, string> = {
+    COVER: 'Обложка',
+    PREVIEW: 'Превью',
+    SCREENSHOT: 'Скриншоты',
+    ARCHIVE: 'Архив',
+    INSTRUCTION: 'Инструкции',
+    EXTRA: 'Дополнительно',
+};
+
+export const PACK_FILE_TYPE_ORDER: PackFileType[] = [
+    'COVER',
+    'PREVIEW',
+    'SCREENSHOT',
+    'ARCHIVE',
+    'INSTRUCTION',
+    'EXTRA',
+];
+

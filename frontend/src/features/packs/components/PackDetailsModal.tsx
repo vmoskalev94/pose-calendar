@@ -28,6 +28,7 @@ import {
 } from '../hooks';
 import type {PackDetails, PackUpdateRequest} from '../model';
 import PackForm, {type PackFormValues} from './PackForm';
+import {PackFilesSection} from './PackFilesSection';
 
 interface PackDetailsModalProps {
     packId: number | null;
@@ -126,7 +127,13 @@ const PackDetailsModal = ({packId, opened, onClose}: PackDetailsModalProps) => {
         : undefined;
 
     return (
-        <Modal opened={opened} onClose={handleClose} title="Пак поз" size="lg">
+        <Modal
+            opened={opened}
+            onClose={handleClose}
+            title="Пак поз"
+            fullScreen
+        >
+
             {isLoading && (
                 <Group justify="center" my="md">
                     <Loader/>
@@ -145,7 +152,7 @@ const PackDetailsModal = ({packId, opened, onClose}: PackDetailsModalProps) => {
             )}
 
             {!isLoading && !hasError && pack && (
-                <ScrollArea h={400}>
+                <ScrollArea>
                     <Stack gap="md">
                         {/* Заголовок + кнопка редактирования */}
                         <Group justify="space-between" align="flex-start">
@@ -258,6 +265,7 @@ const PackDetailsModal = ({packId, opened, onClose}: PackDetailsModalProps) => {
                                             />
                                         ))}
                                 </Stack>
+                                <PackFilesSection packId={pack.id ?? null}/>
                             </>
                         )}
                     </Stack>
