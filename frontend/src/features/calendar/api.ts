@@ -4,6 +4,11 @@ import type {
     ReleaseDto,
     CreateReleaseRequest,
     UpdateReleaseRequest,
+    ReleasePlatformDto,
+    UpdateReleasePlatformRequest,
+    Platform,
+    PostDraftDto,
+    UpsertPostDraftRequest,
 } from './model';
 
 /**
@@ -80,4 +85,69 @@ export async function deleteRelease(
     await httpClient.delete(`/api/releases/${releaseId}`, {
         params: {ownerId},
     });
+}
+
+/**
+ * Получить платформы релиза
+ * Backend endpoint: GET /api/releases/{id}/platforms?ownerId=X
+ */
+export async function fetchReleasePlatforms(
+    releaseId: number,
+    ownerId: number
+): Promise<ReleasePlatformDto[]> {
+    const {data} = await httpClient.get<ReleasePlatformDto[]>(
+        `/api/releases/${releaseId}/platforms`,
+        {params: {ownerId}}
+    );
+    return data;
+}
+
+/**
+ * Создать/обновить платформу релиза (UPSERT)
+ * Backend endpoint: PUT /api/releases/{id}/platforms/{platform}?ownerId=X
+ */
+export async function upsertReleasePlatform(
+    releaseId: number,
+    platform: Platform,
+    ownerId: number,
+    request: UpdateReleasePlatformRequest
+): Promise<ReleasePlatformDto> {
+    const {data} = await httpClient.put<ReleasePlatformDto>(
+        `/api/releases/${releaseId}/platforms/${platform}`,
+        request,
+        {params: {ownerId}}
+    );
+    return data;
+}
+
+/**
+ * Получить черновик поста для платформы
+ * Backend endpoint: GET /api/releases/platforms/{releasePlatformId}/post-draft?ownerId=X
+ */
+export async function fetchPostDraft(
+    releasePlatformId: number,
+    ownerId: number
+): Promise<PostDraftDto> {
+    const {data} = await httpClient.get<PostDraftDto>(
+        `/api/releases/platforms/${releasePlatformId}/post-draft`,
+        {params: {ownerId}}
+    );
+    return data;
+}
+
+/**
+ * Создать/обновить черновик поста (UPSERT)
+ * Backend endpoint: PUT /api/releases/platforms/{releasePlatformId}/post-draft?ownerId=X
+ */
+export async function upsertPostDraft(
+    releasePlatformId: number,
+    ownerId: number,
+    request: UpsertPostDraftRequest
+): Promise<PostDraftDto> {
+    const {data} = await httpClient.put<PostDraftDto>(
+        `/api/releases/platforms/${releasePlatformId}/post-draft`,
+        request,
+        {params: {ownerId}}
+    );
+    return data;
 }

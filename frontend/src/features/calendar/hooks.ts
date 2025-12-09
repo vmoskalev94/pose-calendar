@@ -4,6 +4,11 @@ import type {
     ReleaseDto,
     CreateReleaseRequest,
     UpdateReleaseRequest,
+    ReleasePlatformDto,
+    UpdateReleasePlatformRequest,
+    Platform,
+    PostDraftDto,
+    UpsertPostDraftRequest,
 } from './model';
 import {
     fetchReleases,
@@ -11,6 +16,10 @@ import {
     createRelease,
     updateRelease,
     deleteRelease,
+    fetchReleasePlatforms,
+    upsertReleasePlatform,
+    fetchPostDraft,
+    upsertPostDraft,
 } from './api';
 
 // Query keys для кэширования
@@ -133,6 +142,110 @@ export function useDeleteReleaseMutation(ownerId: number | null) {
             return deleteRelease(releaseId, ownerId);
         },
         onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: RELEASES_QUERY_KEY});
+        },
+    });
+}
+
+/**
+ * Hook для загрузки платформ релиза.
+ */
+export function useReleasePlatformsQuery(
+    releaseId: number | null,
+    ownerId: number | null,
+    enabled = true
+) {
+    return useQuery<ReleasePlatformDto[]>({
+        queryKey:
+            releaseId != null && ownerId != null
+                ? [...RELEASES_QUERY_KEY, releaseId, 'platforms']
+                : [...RELEASES_QUERY_KEY, 'platforms', 'empty'],
+        queryFn: () => {
+            if (releaseId == null || ownerId == null) {
+                throw new Error('releaseId or ownerId is null');
+            }
+            return fetchReleasePlatforms(releaseId, ownerId);
+        },
+        enabled: enabled && releaseId != null && ownerId != null,
+    });
+}
+
+/**
+ * Mutation для создания/обновления платформы релиза.
+ */
+export function useUpsertReleasePlatformMutation(
+    releaseId: number | null,
+    ownerId: number | null
+) {
+    const queryClient = useQueryClient();
+
+    return useMutation<
+        ReleasePlatformDto,
+        unknown,
+        {platform: Platform; request: UpdateReleasePlatformRequest}
+    >({
+        mutationFn: ({platform, request}) => {
+            if (releaseId == null || ownerId == null) {
+                throw new Error('releaseId or ownerId is required');
+            }
+            return upsertReleasePlatform(releaseId, platform, ownerId, request);
+        },
+        onSuccess: () => {
+            if (releaseId != null) {
+                queryClient.invalidateQueries({
+                    queryKey: [...RELEASES_QUERY_KEY, releaseId, 'platforms'],
+                });
+            }
+            queryClient.invalidateQueries({queryKey: RELEASES_QUERY_KEY});
+        },
+    });
+}
+
+/**
+ * Hook для загрузки черновика поста платформы.
+ */
+export function usePostDraftQuery(
+    releasePlatformId: number | null,
+    ownerId: number | null,
+    enabled = true
+) {
+    return useQuery<PostDraftDto>({
+        queryKey:
+            releasePlatformId != null && ownerId != null
+                ? [...RELEASES_QUERY_KEY, 'platforms', releasePlatformId, 'draft']
+                : [...RELEASES_QUERY_KEY, 'draft', 'empty'],
+        queryFn: () => {
+            if (releasePlatformId == null || ownerId == null) {
+                throw new Error('releasePlatformId or ownerId is null');
+            }
+            return fetchPostDraft(releasePlatformId, ownerId);
+        },
+        enabled: enabled && releasePlatformId != null && ownerId != null,
+    });
+}
+
+/**
+ * Mutation для создания/обновления черновика поста.
+ */
+export function useUpsertPostDraftMutation(
+    releasePlatformId: number | null,
+    ownerId: number | null
+) {
+    const queryClient = useQueryClient();
+
+    return useMutation<PostDraftDto, unknown, UpsertPostDraftRequest>({
+        mutationFn: (request) => {
+            if (releasePlatformId == null || ownerId == null) {
+                throw new Error('releasePlatformId or ownerId is required');
+            }
+            return upsertPostDraft(releasePlatformId, ownerId, request);
+        },
+        onSuccess: () => {
+            if (releasePlatformId != null) {
+                queryClient.invalidateQueries({
+                    queryKey: [...RELEASES_QUERY_KEY, 'platforms', releasePlatformId, 'draft'],
+                });
+            }
             queryClient.invalidateQueries({queryKey: RELEASES_QUERY_KEY});
         },
     });

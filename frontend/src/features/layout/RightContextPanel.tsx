@@ -19,19 +19,40 @@ import {
     IconCalendarStats,
     IconPlus,
 } from '@tabler/icons-react';
+import dayjs from 'dayjs';
 import PackShortCard from '../packs/components/PackShortCard';
 import PackDetailsModal from '../packs/components/PackDetailsModal';
 import PackForm, {type PackFormValues} from '../packs/components/PackForm';
 import {useCreatePackMutation, usePacksQuery} from '../packs/hooks';
 import type {PackCreateRequest} from '../packs/model';
+import ReleaseCard from '../calendar/components/ReleaseCard';
+import ReleaseDetailsModal from '../calendar/components/ReleaseDetailsModal';
+import ReleaseForm, {type ReleaseFormValues} from '../calendar/components/ReleaseForm';
+import {useAuth} from '../auth/AuthContext';
+import {useReleasesQuery, useCreateReleaseMutation} from '../calendar/hooks';
+import type {CreateReleaseRequest} from '../calendar/model';
 
 
 const RightContextPanel = () => {
+    const {user} = useAuth();
     const [selectedPackId, setSelectedPackId] = useState<number | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [selectedReleaseId, setSelectedReleaseId] = useState<number | null>(null);
+    const [isCreateReleaseModalOpen, setIsCreateReleaseModalOpen] = useState(false);
 
     const {data: packs, isLoading, isError} = usePacksQuery();
     const createPackMutation = useCreatePackMutation();
+
+    // Загружаем релизы на ближайшие 30 дней
+    const today = dayjs();
+    const from = today.format('YYYY-MM-DD');
+    const to = today.add(30, 'day').format('YYYY-MM-DD');
+    const {
+        data: releases,
+        isLoading: releasesLoading,
+        isError: releasesError,
+    } = useReleasesQuery(user?.id ?? null, from, to);
+    const createReleaseMutation = useCreateReleaseMutation(user?.id ?? null);
 
     const handleOpenPack = (id: number) => {
         setSelectedPackId(id);
@@ -64,6 +85,39 @@ const RightContextPanel = () => {
         createPackMutation.mutate(payload, {
             onSuccess: () => {
                 setIsCreateModalOpen(false);
+            },
+        });
+    };
+
+    const handleOpenRelease = (id: number) => {
+        setSelectedReleaseId(id);
+    };
+
+    const handleCloseReleaseModal = () => {
+        setSelectedReleaseId(null);
+    };
+
+    const handleOpenCreateRelease = () => {
+        setIsCreateReleaseModalOpen(true);
+    };
+
+    const handleCloseCreateRelease = () => {
+        setIsCreateReleaseModalOpen(false);
+    };
+
+    const handleCreateReleaseSubmit = (values: ReleaseFormValues) => {
+        const payload: CreateReleaseRequest = {
+            packId: values.packId,
+            title: values.title,
+            releaseDateTime: dayjs(values.releaseDateTime).format(
+                'YYYY-MM-DDTHH:mm:ss'
+            ),
+            notes: values.notes,
+        };
+
+        createReleaseMutation.mutate(payload, {
+            onSuccess: () => {
+                setIsCreateReleaseModalOpen(false);
             },
         });
     };
@@ -149,13 +203,61 @@ const RightContextPanel = () => {
 
                     <Tabs.Panel value="releases" pt="md">
                         <Stack gap="sm">
-                            <Text size="sm" c="dimmed">
-                                Здесь позже появится список релизов и быстрый
-                                переход к карточке релиза.
-                            </Text>
-                            <Button size="xs" variant="outline">
-                                Запланировать релиз
-                            </Button>
+                            <Group justify="space-between" align="center">
+                                <Text fw={500} size="sm">
+                                    Ближайшие релизы
+                                </Text>
+                                <Button
+                                    size="xs"
+                                    leftSection={<IconPlus size={14}/>}
+                                    onClick={handleOpenCreateRelease}
+                                >
+                                    Новый релиз
+                                </Button>
+                            </Group>
+
+                            {releasesLoading && (
+                                <Center py="md">
+                                    <Loader size="sm"/>
+                                </Center>
+                            )}
+
+                            {releasesError && (
+                                <Alert
+                                    color="red"
+                                    icon={<IconAlertCircle size={16}/>}
+                                    variant="light"
+                                >
+                                    Не удалось загрузить список релизов.
+                                </Alert>
+                            )}
+
+                            {!releasesLoading &&
+                                !releasesError &&
+                                releases &&
+                                releases.length === 0 && (
+                                    <Text size="sm" c="dimmed">
+                                        У тебя пока нет запланированных релизов. Нажми
+                                        «Новый релиз», чтобы создать первый.
+                                    </Text>
+                                )}
+
+                            {!releasesLoading &&
+                                !releasesError &&
+                                releases &&
+                                releases.length > 0 && (
+                                    <Stack gap="xs">
+                                        {releases.map((release) => (
+                                            <ReleaseCard
+                                                key={release.id}
+                                                release={release}
+                                                onClick={() =>
+                                                    handleOpenRelease(release.id)
+                                                }
+                                            />
+                                        ))}
+                                    </Stack>
+                                )}
                         </Stack>
                     </Tabs.Panel>
                 </Tabs>
@@ -178,6 +280,26 @@ const RightContextPanel = () => {
                     onSubmit={handleCreateSubmit}
                     onCancel={handleCloseCreate}
                     isSubmitting={createPackMutation.isPending}
+                />
+            </Modal>
+
+            <ReleaseDetailsModal
+                releaseId={selectedReleaseId}
+                opened={selectedReleaseId != null}
+                onClose={handleCloseReleaseModal}
+            />
+
+            <Modal
+                opened={isCreateReleaseModalOpen}
+                onClose={handleCloseCreateRelease}
+                title="Новый релиз"
+                size="lg"
+            >
+                <ReleaseForm
+                    mode="create"
+                    onSubmit={handleCreateReleaseSubmit}
+                    onCancel={handleCloseCreateRelease}
+                    isSubmitting={createReleaseMutation.isPending}
                 />
             </Modal>
         </>

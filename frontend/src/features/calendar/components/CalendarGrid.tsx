@@ -22,7 +22,6 @@ function generateCalendarDays(
     releases: ReleaseDto[]
 ): CalendarDay[] {
     const firstDayOfMonth = dayjs(new Date(year, month, 1));
-    const lastDayOfMonth = firstDayOfMonth.endOf('month');
 
     // Определяем день недели первого дня месяца (0 = Sunday, 1 = Monday, ...)
     // Преобразуем так чтобы Monday = 0, Sunday = 6

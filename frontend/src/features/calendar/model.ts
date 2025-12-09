@@ -20,6 +20,15 @@ export type Platform =
     | 'BOOSTY'
     | 'TUMBLR';
 
+// DTO черновика поста
+export interface PostDraftDto {
+    id: number;
+    title: string;
+    body: string;
+    hashtags: string;
+    language: string;
+}
+
 // DTO платформы релиза
 export interface ReleasePlatformDto {
     id: number;
@@ -28,6 +37,7 @@ export interface ReleasePlatformDto {
     plannedDateTime: string | null; // ISO-8601 LocalDateTime
     publishedDateTime: string | null; // ISO-8601 LocalDateTime
     notes: string | null;
+    postDraft?: PostDraftDto; // Черновик поста для платформы
 }
 
 // Основной DTO релиза (соответствует backend)
@@ -57,6 +67,22 @@ export interface UpdateReleaseRequest {
     releaseDateTime?: string;
     status?: ReleaseStatus;
     notes?: string;
+}
+
+// Request для обновления платформы релиза
+export interface UpdateReleasePlatformRequest {
+    status?: ReleasePlatformStatus;
+    plannedDateTime?: string; // ISO-8601 LocalDateTime
+    publishedDateTime?: string; // ISO-8601 LocalDateTime
+    notes?: string;
+}
+
+// Request для создания/обновления черновика поста
+export interface UpsertPostDraftRequest {
+    title?: string;
+    body?: string;
+    hashtags?: string;
+    language?: string;
 }
 
 // Вспомогательный тип для представления дня в календаре

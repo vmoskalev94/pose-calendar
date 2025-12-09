@@ -152,7 +152,7 @@ const PackDetailsModal = ({packId, opened, onClose}: PackDetailsModalProps) => {
             )}
 
             {!isLoading && !hasError && pack && (
-                <ScrollArea>
+                <ScrollArea style={{height: '100%'}}>
                     <Stack gap="md">
                         {/* Заголовок + кнопка редактирования */}
                         <Group justify="space-between" align="flex-start">
