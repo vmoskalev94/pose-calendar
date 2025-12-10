@@ -28,6 +28,10 @@ interface PackFilesSectionProps {
     readonly?: boolean;
 }
 
+// Константа для будущего ограничения количества скриншотов
+// TODO: Установить лимит в будущем (например, 25)
+const MAX_SCREENSHOTS: number | null = null;
+
 export const PackFilesSection: React.FC<PackFilesSectionProps> = ({
                                                                       packId,
                                                                       readonly = false,
@@ -63,10 +67,35 @@ export const PackFilesSection: React.FC<PackFilesSectionProps> = ({
         fileType: PackFileType,
         event: React.ChangeEvent<HTMLInputElement>,
     ) => {
-        const file = event.target.files?.[0];
-        if (!file || packId == null) return;
+        const files = Array.from(event.target.files || []);
+        if (files.length === 0 || packId == null) return;
 
-        uploadMutation.mutate({fileType, file});
+        // Проверка для single-file типов
+        if (fileType === 'COVER' || fileType === 'PREVIEW' || fileType === 'ARCHIVE') {
+            const existingCount = filesByType[fileType].length;
+            if (existingCount >= 1) {
+                alert(`Можно загрузить только 1 файл типа ${PACK_FILE_TYPE_LABELS[fileType]}`);
+                event.target.value = '';
+                return;
+            }
+            uploadMutation.mutate({fileType, file: files[0]});
+        } else {
+            // Multiple files allowed для SCREENSHOT, INSTRUCTION, EXTRA
+            // Проверка лимита для SCREENSHOT (опционально)
+            if (fileType === 'SCREENSHOT' && MAX_SCREENSHOTS != null) {
+                const existingCount = filesByType[fileType].length;
+                if (existingCount + files.length > MAX_SCREENSHOTS) {
+                    alert(`Максимум ${MAX_SCREENSHOTS} скриншотов`);
+                    event.target.value = '';
+                    return;
+                }
+            }
+
+            // Загружаем все файлы
+            files.forEach((file) => {
+                uploadMutation.mutate({fileType, file});
+            });
+        }
 
         // очищаем, чтобы не торчало длинное имя
         event.target.value = '';
@@ -148,6 +177,7 @@ export const PackFilesSection: React.FC<PackFilesSectionProps> = ({
                                                 type="file"
                                                 hidden
                                                 accept={getAcceptForFileType(type)}
+                                                multiple={shouldAllowMultiple(type)}
                                                 onChange={(e) => handleFileChange(type, e)}
                                             />
                                         </Button>
@@ -226,6 +256,10 @@ export const PackFilesSection: React.FC<PackFilesSectionProps> = ({
 
 // -------- helpers --------
 
+function shouldAllowMultiple(type: PackFileType): boolean {
+    return type === 'SCREENSHOT' || type === 'INSTRUCTION' || type === 'EXTRA';
+}
+
 function getAcceptForFileType(type: PackFileType): string | undefined {
     switch (type) {
         case 'COVER':
@@ -233,12 +267,12 @@ function getAcceptForFileType(type: PackFileType): string | undefined {
         case 'SCREENSHOT':
             return 'image/*';
         case 'ARCHIVE':
-            return '.zip,.rar,.7z,.package';
+            return '.zip,.rar,.7z,.tar,.gz,.package';
         case 'INSTRUCTION':
             return '.txt,.md,.pdf,.doc,.docx';
         case 'EXTRA':
         default:
-            return undefined;
+            return undefined; // Любые файлы
     }
 }
 

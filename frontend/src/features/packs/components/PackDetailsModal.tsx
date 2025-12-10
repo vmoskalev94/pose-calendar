@@ -97,8 +97,7 @@ const PackDetailsModal = ({packId, opened, onClose}: PackDetailsModalProps) => {
             allInOne: values.allInOne,
             hashtags: values.hashtags,
             requirements: values.requirements,
-            // статус пока не редактируем, отправляем тот же
-            status: pack.status,
+            status: values.status ?? pack.status,
         };
 
         updatePackMutation.mutate(payload, {
@@ -123,6 +122,7 @@ const PackDetailsModal = ({packId, opened, onClose}: PackDetailsModalProps) => {
             allInOne: pack.allInOne,
             hashtags: pack.hashtags ?? undefined,
             requirements: pack.requirements ?? undefined,
+            status: pack.status,
         }
         : undefined;
 
@@ -131,7 +131,7 @@ const PackDetailsModal = ({packId, opened, onClose}: PackDetailsModalProps) => {
             opened={opened}
             onClose={handleClose}
             title="Пак поз"
-            fullScreen
+            size="lg"
         >
 
             {isLoading && (

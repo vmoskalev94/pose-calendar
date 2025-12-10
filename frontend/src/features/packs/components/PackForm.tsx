@@ -9,13 +9,21 @@ import {
     Textarea,
     TextInput,
 } from '@mantine/core';
-import type { PackType } from '../model';
+import type { PackType, PackStatus } from '../model';
 
 const packTypeOptions = [
     { value: 'SOLO', label: 'Solo' },
     { value: 'COUPLE', label: 'Couple' },
     { value: 'GROUP', label: 'Group' },
     { value: 'MIXED', label: 'Mixed' },
+];
+
+const statusOptions = [
+    { value: 'DRAFT', label: 'Черновик' },
+    { value: 'IN_PROGRESS', label: 'В работе' },
+    { value: 'READY_FOR_RELEASE', label: 'Готов к релизу' },
+    { value: 'RELEASED', label: 'Релизнут' },
+    { value: 'ARCHIVED', label: 'Архив' },
 ];
 
 export interface PackFormValues {
@@ -27,6 +35,7 @@ export interface PackFormValues {
     allInOne: boolean;
     hashtags?: string;
     requirements?: string;
+    status?: PackStatus;
 }
 
 interface PackFormProps {
@@ -62,6 +71,9 @@ const PackForm = ({
     const [requirements, setRequirements] = useState(
         initialValues?.requirements ?? ''
     );
+    const [status, setStatus] = useState<PackStatus>(
+        initialValues?.status ?? 'DRAFT'
+    );
 
     const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
@@ -75,6 +87,7 @@ const PackForm = ({
             allInOne,
             hashtags: hashtags || undefined,
             requirements: requirements || undefined,
+            status,
         };
 
         onSubmit(payload);
@@ -145,6 +158,20 @@ const PackForm = ({
                     value={requirements}
                     onChange={(event) => setRequirements(event.currentTarget.value)}
                 />
+                {mode === 'edit' && (
+                    <Select
+                        label="Статус"
+                        placeholder="Выберите статус"
+                        data={statusOptions}
+                        value={status}
+                        onChange={(value) => {
+                            if (value) {
+                                setStatus(value as PackStatus);
+                            }
+                        }}
+                        allowDeselect={false}
+                    />
+                )}
                 <Group justify="flex-end" mt="md">
                     <Button type="button" variant="subtle" onClick={onCancel}>
                         Отмена

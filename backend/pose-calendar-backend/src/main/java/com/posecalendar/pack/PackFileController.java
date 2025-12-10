@@ -76,11 +76,18 @@ public class PackFileController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(storedFile.contentType()));
         headers.setContentLength(storedFile.contentLength());
-        headers.setContentDisposition(
-                ContentDisposition.attachment()
+
+        // Для картинок используем inline, чтобы они отображались в браузере
+        boolean isImage = storedFile.contentType().startsWith("image/");
+        ContentDisposition disposition = isImage
+                ? ContentDisposition.inline()
                         .filename(storedFile.filename(), StandardCharsets.UTF_8)
                         .build()
-        );
+                : ContentDisposition.attachment()
+                        .filename(storedFile.filename(), StandardCharsets.UTF_8)
+                        .build();
+
+        headers.setContentDisposition(disposition);
 
         return ResponseEntity.ok()
                 .headers(headers)

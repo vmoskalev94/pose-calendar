@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {Card, Modal, SimpleGrid, Title} from '@mantine/core';
+import {Box, Card, Modal, SimpleGrid, Title} from '@mantine/core';
 import dayjs from 'dayjs';
 import AppLayout from '../layout/AppLayout';
 import RightContextPanel from '../features/layout/RightContextPanel';
@@ -52,7 +52,13 @@ const AppPage = () => {
 
     return (
         <AppLayout>
-            <SimpleGrid cols={{base: 1, lg: 2}} spacing="md">
+            <Box
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.5fr 1fr',
+                    gap: 'var(--mantine-spacing-md)',
+                }}
+            >
                 <Card withBorder padding="lg" radius="md">
                     <Title order={3} mb="md">
                         Календарь релизов
@@ -64,7 +70,7 @@ const AppPage = () => {
                 </Card>
 
                 <RightContextPanel/>
-            </SimpleGrid>
+            </Box>
 
             {/* Модалка создания релиза */}
             <Modal

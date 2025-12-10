@@ -8,6 +8,7 @@ import {
     Loader,
     Modal,
     ScrollArea,
+    Select,
     Stack,
     Text,
     Title,
@@ -16,6 +17,7 @@ import {
     IconAlertCircle,
     IconCalendar,
     IconPencil,
+    IconPlus,
     IconTrash,
 } from '@tabler/icons-react';
 import dayjs from 'dayjs';
@@ -28,8 +30,9 @@ import {
     useReleasePlatformsQuery,
     usePostDraftQuery,
     useUpsertPostDraftMutation,
+    useUpsertReleasePlatformMutation,
 } from '../hooks';
-import type {UpdateReleaseRequest} from '../model';
+import type {UpdateReleaseRequest, Platform} from '../model';
 import {RELEASE_STATUS_COLORS} from '../model';
 import ReleaseForm, {type ReleaseFormValues} from './ReleaseForm';
 import ReleasePlatformCard from './ReleasePlatformCard';
@@ -56,6 +59,8 @@ const ReleaseDetailsModal = ({
     const {user} = useAuth();
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedPlatformId, setSelectedPlatformId] = useState<number | null>(null);
+    const [isAddingPlatform, setIsAddingPlatform] = useState(false);
+    const [selectedNewPlatform, setSelectedNewPlatform] = useState<Platform | null>(null);
 
     const {
         data: release,
@@ -83,6 +88,11 @@ const ReleaseDetailsModal = ({
 
     const upsertPostDraftMutation = useUpsertPostDraftMutation(
         selectedPlatformId,
+        user?.id ?? null
+    );
+
+    const upsertPlatformMutation = useUpsertReleasePlatformMutation(
+        releaseId,
         user?.id ?? null
     );
 
@@ -128,9 +138,28 @@ const ReleaseDetailsModal = ({
         });
     };
 
+    const handleAddPlatform = () => {
+        if (!selectedNewPlatform) return;
+
+        upsertPlatformMutation.mutate(
+            {
+                platform: selectedNewPlatform,
+                request: {status: 'PLANNED'},
+            },
+            {
+                onSuccess: () => {
+                    setIsAddingPlatform(false);
+                    setSelectedNewPlatform(null);
+                },
+            }
+        );
+    };
+
     const handleClose = () => {
         setIsEditMode(false);
         setSelectedPlatformId(null);
+        setIsAddingPlatform(false);
+        setSelectedNewPlatform(null);
         onClose();
     };
 
@@ -149,7 +178,7 @@ const ReleaseDetailsModal = ({
             opened={opened}
             onClose={handleClose}
             title="Релиз"
-            fullScreen
+            size="lg"
         >
             {isLoading && (
                 <Group justify="center" my="md">
@@ -256,9 +285,54 @@ const ReleaseDetailsModal = ({
 
                                 {/* Платформы */}
                                 <Stack gap={4}>
-                                    <Text fw={500} size="sm">
-                                        Платформы
-                                    </Text>
+                                    <Group justify="space-between">
+                                        <Text fw={500} size="sm">
+                                            Платформы
+                                        </Text>
+                                        <Button
+                                            size="xs"
+                                            variant="light"
+                                            leftSection={<IconPlus size={14}/>}
+                                            onClick={() => setIsAddingPlatform(true)}
+                                        >
+                                            Добавить
+                                        </Button>
+                                    </Group>
+
+                                    {isAddingPlatform && (
+                                        <Group gap="xs">
+                                            <Select
+                                                placeholder="Выберите платформу"
+                                                data={[
+                                                    {value: 'TELEGRAM', label: 'Telegram'},
+                                                    {value: 'VK', label: 'VK'},
+                                                    {value: 'BOOSTY', label: 'Boosty'},
+                                                    {value: 'TUMBLR', label: 'Tumblr'},
+                                                ]}
+                                                value={selectedNewPlatform}
+                                                onChange={(value) => setSelectedNewPlatform(value as Platform)}
+                                            />
+                                            <Button
+                                                size="xs"
+                                                onClick={handleAddPlatform}
+                                                loading={upsertPlatformMutation.isPending}
+                                                disabled={!selectedNewPlatform}
+                                            >
+                                                Добавить
+                                            </Button>
+                                            <Button
+                                                size="xs"
+                                                variant="subtle"
+                                                onClick={() => {
+                                                    setIsAddingPlatform(false);
+                                                    setSelectedNewPlatform(null);
+                                                }}
+                                            >
+                                                Отмена
+                                            </Button>
+                                        </Group>
+                                    )}
+
                                     {!platforms || platforms.length === 0 ? (
                                         <Text size="xs" c="dimmed">
                                             Платформы пока не добавлены.

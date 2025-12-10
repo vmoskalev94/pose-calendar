@@ -105,7 +105,7 @@ export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = {
 // Цвета для статусов (Mantine colors)
 export const RELEASE_STATUS_COLORS: Record<ReleaseStatus, string> = {
     PLANNED: 'blue',
-    CONTENT_READY: 'green',
-    POSTED: 'gray',
+    CONTENT_READY: 'yellow',
+    POSTED: 'green',
     CANCELLED: 'red',
 };

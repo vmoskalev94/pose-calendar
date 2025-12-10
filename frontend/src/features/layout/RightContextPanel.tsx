@@ -245,19 +245,32 @@ const RightContextPanel = () => {
                             {!releasesLoading &&
                                 !releasesError &&
                                 releases &&
-                                releases.length > 0 && (
-                                    <Stack gap="xs">
-                                        {releases.map((release) => (
-                                            <ReleaseCard
-                                                key={release.id}
-                                                release={release}
-                                                onClick={() =>
-                                                    handleOpenRelease(release.id)
-                                                }
-                                            />
-                                        ))}
-                                    </Stack>
-                                )}
+                                releases.length > 0 && (() => {
+                                    const groupedReleases = groupReleasesByDate(releases);
+
+                                    return (
+                                        <Stack gap="md">
+                                            {Array.from(groupedReleases.entries()).map(([dateLabel, dateReleases]) => (
+                                                <Stack key={dateLabel} gap="xs">
+                                                    <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+                                                        {dateLabel}
+                                                    </Text>
+                                                    <Stack gap="xs">
+                                                        {dateReleases.map((release) => (
+                                                            <ReleaseCard
+                                                                key={release.id}
+                                                                release={release}
+                                                                onClick={() =>
+                                                                    handleOpenRelease(release.id)
+                                                                }
+                                                            />
+                                                        ))}
+                                                    </Stack>
+                                                </Stack>
+                                            ))}
+                                        </Stack>
+                                    );
+                                })()}
                         </Stack>
                     </Tabs.Panel>
                 </Tabs>
@@ -273,7 +286,7 @@ const RightContextPanel = () => {
                 opened={isCreateModalOpen}
                 onClose={handleCloseCreate}
                 title="Новый пак"
-                size="lg"
+                fullScreen
             >
                 <PackForm
                     mode="create"
@@ -305,5 +318,33 @@ const RightContextPanel = () => {
         </>
     );
 };
+
+// -------- helpers --------
+
+function groupReleasesByDate(releases: any[]): Map<string, any[]> {
+    const grouped = new Map<string, any[]>();
+
+    releases.forEach((release) => {
+        const date = dayjs(release.releaseDateTime);
+        const today = dayjs().startOf('day');
+        const tomorrow = today.add(1, 'day');
+
+        let key: string;
+        if (date.isSame(today, 'day')) {
+            key = 'Сегодня';
+        } else if (date.isSame(tomorrow, 'day')) {
+            key = 'Завтра';
+        } else {
+            key = date.format('DD.MM.YYYY');
+        }
+
+        if (!grouped.has(key)) {
+            grouped.set(key, []);
+        }
+        grouped.get(key)!.push(release);
+    });
+
+    return grouped;
+}
 
 export default RightContextPanel;
