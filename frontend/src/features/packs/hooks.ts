@@ -187,3 +187,6 @@ export function useDeletePackFileMutation(packId: number | null) {
         },
     });
 }
+
+// Экспорт хука для безопасной загрузки изображений
+export {useSecureImageUrl} from './hooks/useSecureImageUrl';

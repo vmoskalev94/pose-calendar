@@ -1,5 +1,5 @@
 // src/features/packs/api.ts
-import {httpClient} from '../../shared/api/httpClient';
+import {httpClient, API_BASE_URL} from '../../shared/api/httpClient';
 import type {
     PackCreateRequest,
     PackDetails,
@@ -91,7 +91,15 @@ export async function deletePackFile(fileId: string): Promise<void> {
     await httpClient.delete(`/api/packs/files/${fileId}`);
 }
 
+export async function fetchPackFileBlob(fileId: string): Promise<Blob> {
+    const {data} = await httpClient.get<Blob>(
+        `/api/packs/files/${fileId}`,
+        {responseType: 'blob'}
+    );
+    return data;
+}
+
 export function getPackFileDownloadUrl(fileId: string): string {
-    return `/api/packs/files/${fileId}`;
+    return `${API_BASE_URL}/api/packs/files/${fileId}`;
 }
 

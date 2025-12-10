@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {Box, Card, Modal, SimpleGrid, Title} from '@mantine/core';
+import {Box, Card, Modal, Title} from '@mantine/core';
 import dayjs from 'dayjs';
 import AppLayout from '../layout/AppLayout';
 import RightContextPanel from '../features/layout/RightContextPanel';
@@ -55,7 +55,7 @@ const AppPage = () => {
             <Box
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: '1.5fr 1fr',
+                    gridTemplateColumns: '7fr 3fr',
                     gap: 'var(--mantine-spacing-md)',
                 }}
             >

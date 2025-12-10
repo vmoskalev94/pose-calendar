@@ -39,7 +39,7 @@ const AppLayout = ({children}: AppLayoutProps) => {
         <AppShell
             header={{height: 56}}
             navbar={{
-                width: 195,
+                width: 215,
                 breakpoint: 'sm',
                 collapsed: {mobile: !opened},
             }}

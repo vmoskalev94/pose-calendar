@@ -9,6 +9,8 @@ import {
     Loader,
     Image,
     Divider,
+    Skeleton,
+    Box,
 } from '@mantine/core';
 import {
     usePackFilesQuery,
@@ -22,11 +24,57 @@ import {
     type PackFileType,
 } from '../model';
 import {getPackFileDownloadUrl} from '../api';
+import {useSecureImageUrl} from '../hooks/useSecureImageUrl';
 
 interface PackFilesSectionProps {
     packId: number | null;
     readonly?: boolean;
 }
+
+// Подкомпонент для безопасного отображения изображений
+interface SecurePackFileImageProps {
+    fileId: string;
+    filename: string;
+}
+
+const SecurePackFileImage: React.FC<SecurePackFileImageProps> = ({fileId, filename}) => {
+    const {imageUrl, isLoading, isError} = useSecureImageUrl({fileId});
+
+    if (isLoading) {
+        return <Skeleton w={64} h={64} radius="md"/>;
+    }
+
+    if (isError || !imageUrl) {
+        return (
+            <Box
+                w={64}
+                h={64}
+                bg="gray.1"
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 'var(--mantine-radius-md)',
+                }}
+            >
+                <Text size="xs" c="dimmed">
+                    ❌
+                </Text>
+            </Box>
+        );
+    }
+
+    return (
+        <Image
+            src={imageUrl}
+            w={64}
+            h={64}
+            radius="md"
+            fit="cover"
+            alt={filename}
+        />
+    );
+};
 
 // Константа для будущего ограничения количества скриншотов
 // TODO: Установить лимит в будущем (например, 25)
@@ -199,13 +247,9 @@ export const PackFilesSection: React.FC<PackFilesSectionProps> = ({
                                             >
                                                 <Group align="flex-start" gap="sm" wrap="nowrap">
                                                     {isImageFile(file) && (
-                                                        <Image
-                                                            src={getPackFileDownloadUrl(file.id)}
-                                                            w={64}
-                                                            h={64}
-                                                            radius="md"
-                                                            fit="cover"
-                                                            alt={file.originalFilename}
+                                                        <SecurePackFileImage
+                                                            fileId={file.id}
+                                                            filename={file.originalFilename}
                                                         />
                                                     )}
 

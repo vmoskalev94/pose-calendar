@@ -57,9 +57,6 @@ public class SecurityConfig {
                         // логин
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 
-                        // ⬇️ файлы пака — можно скачивать без Authorization
-                        .requestMatchers(HttpMethod.GET, "/api/packs/files/**").permitAll()
-
                         // всё остальное только для авторизованных
                         .anyRequest().authenticated()
                 )

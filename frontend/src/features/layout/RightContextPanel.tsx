@@ -286,7 +286,7 @@ const RightContextPanel = () => {
                 opened={isCreateModalOpen}
                 onClose={handleCloseCreate}
                 title="Новый пак"
-                fullScreen
+                size="lg"
             >
                 <PackForm
                     mode="create"

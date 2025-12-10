@@ -24,6 +24,12 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 40MB      # максимальный размер одного файла
+      max-request-size: 40MB   # максимальный размер запроса (включая все файлы + metadata)
+
 server:
   port: 8080
 
