@@ -1,19 +1,18 @@
 package com.posecalendar.pack;
 
-import com.posecalendar.pack.dto.PackCreateRequest;
-import com.posecalendar.pack.dto.PackDetailsDto;
-import com.posecalendar.pack.dto.PackShortDto;
-import com.posecalendar.pack.dto.PackTaskDto;
-import com.posecalendar.pack.dto.PackTaskUpdateRequest;
-import com.posecalendar.pack.dto.PackUpdateRequest;
+import com.posecalendar.auth.AuthService;
+import com.posecalendar.pack.dto.*;
+import com.posecalendar.pack.dto.PackPlatformUpdateRequest;
 import com.posecalendar.user.User;
 import com.posecalendar.user.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -99,6 +98,43 @@ public class PackController {
         PackTaskDto updated = packService.updateTask(taskId, request, currentUser);
         return ResponseEntity.ok(updated);
     }
+
+    /**
+     * Получить список платформ для указанного пака текущего пользователя.
+     */
+    @GetMapping("/{packId}/platforms")
+    public List<PackPlatformDto> getPackPlatforms(@PathVariable Long packId) {
+        var currentUser = getCurrentUser();
+        return packService.getPlatformsForPack(packId, currentUser);
+    }
+
+    /**
+     * Обновить состояние платформы пака (статус, даты, заметки).
+     */
+    @PutMapping("/platforms/{platformId}")
+    public PackPlatformDto updatePackPlatform(
+            @PathVariable Long platformId,
+            @Valid @RequestBody PackPlatformUpdateRequest request
+    ) {
+        var currentUser = getCurrentUser();
+        return packService.updatePackPlatform(platformId, currentUser, request);
+    }
+
+    /**
+     * Вернуть паки текущего пользователя для календаря
+     * в заданном диапазоне дат (from/to включительно).
+     *
+     * Пример: GET /api/packs/calendar?from=2025-01-01&to=2025-01-31
+     */
+    @GetMapping("/calendar")
+    public List<PackShortDto> getPacksForCalendar(
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        var currentUser = getCurrentUser();
+        return packService.getPacksForCalendar(currentUser, from, to);
+    }
+
 
     // ------------------------------------------------------------------------
     // Вспомогательный метод для получения текущего пользователя

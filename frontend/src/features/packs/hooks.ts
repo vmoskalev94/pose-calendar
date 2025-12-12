@@ -3,7 +3,6 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import type {
     PackCreateRequest,
     PackDetails,
-    PackShort,
     PackTask,
     PackTaskUpdateRequest,
     PackUpdateRequest,
@@ -23,6 +22,22 @@ import {
     deletePackFile,
 } from './api';
 import type {PackFile, PackFileType} from './model';
+
+import {
+    fetchPacksForCalendar,
+    fetchPackPlatforms,
+    updatePackPlatform,
+    upsertPackPostDraft,
+} from './api';
+
+import type {
+    PackPlatform,
+    PackPlatformUpdatePayload,
+    PackPostDraft,
+    PackPostDraftPayload,
+    PackShort,
+} from './model';
+
 
 
 export const PACKS_QUERY_KEY = ['packs'] as const;
@@ -190,3 +205,58 @@ export function useDeletePackFileMutation(packId: number | null) {
 
 // Экспорт хука для безопасной загрузки изображений
 export {useSecureImageUrl} from './hooks/useSecureImageUrl';
+
+export function useCalendarPacksQuery(from: string, to: string) {
+    return useQuery<PackShort[], Error>({
+        queryKey: ['packs', 'calendar', { from, to }],
+        queryFn: () => fetchPacksForCalendar(from, to),
+        enabled: Boolean(from && to),
+    });
+}
+export function usePackPlatformsQuery(packId: number | null | undefined) {
+    return useQuery<PackPlatform[], Error>({
+        queryKey: ['packs', packId, 'platforms'],
+        queryFn: () => fetchPackPlatforms(packId as number),
+        enabled: typeof packId === 'number',
+    });
+}
+export function useUpdatePackPlatformMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation<PackPlatform, Error, { platformId: number; payload: PackPlatformUpdatePayload }>(
+        {
+            mutationFn: ({ platformId, payload }) => updatePackPlatform(platformId, payload),
+            onSuccess: (data) => {
+                // Инвалидируем платформы конкретного пака
+                queryClient.invalidateQueries({
+                    queryKey: ['packs', data.packId, 'platforms'],
+                });
+                // И список паков на всякий случай (календарь/панель)
+                queryClient.invalidateQueries({ queryKey: ['packs'] });
+                queryClient.invalidateQueries({ queryKey: ['packs', 'calendar'] });
+            },
+        },
+    );
+}
+
+export function useUpsertPackPostDraftMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation<
+        PackPostDraft,
+        Error,
+        { platformId: number; payload: PackPostDraftPayload; packId: number }
+    >({
+        mutationFn: ({ platformId, payload }) => upsertPackPostDraft(platformId, payload),
+        onSuccess: (_draft, { packId }) => {
+            // помечаем первый аргумент как "использованный", чтобы TS не ругался
+            void _draft;
+
+            // Обновляем платформы для соответствующего пака
+            queryClient.invalidateQueries({
+                queryKey: ['packs', packId, 'platforms'],
+            });
+        },
+    });
+}
+

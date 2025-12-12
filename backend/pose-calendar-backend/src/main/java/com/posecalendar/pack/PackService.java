@@ -1,12 +1,9 @@
 package com.posecalendar.pack;
 
-import com.posecalendar.pack.dto.PackCreateRequest;
-import com.posecalendar.pack.dto.PackDetailsDto;
-import com.posecalendar.pack.dto.PackShortDto;
-import com.posecalendar.pack.dto.PackTaskDto;
-import com.posecalendar.pack.dto.PackTaskUpdateRequest;
-import com.posecalendar.pack.dto.PackUpdateRequest;
+import com.posecalendar.pack.dto.*;
+import com.posecalendar.pack.dto.PackPlatformUpdateRequest;
 import com.posecalendar.user.User;
+import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +24,8 @@ public class PackService {
     private final PackRepository packRepository;
     private final PackTaskRepository packTaskRepository;
     private final PackMapper packMapper;
+    private final PackPlatformRepository packPlatformRepository;
+
 
     /**
      * Получить список паков текущего пользователя.
@@ -33,6 +34,56 @@ public class PackService {
     public List<PackShortDto> getPacksForUser(User currentUser) {
         List<Pack> packs = packRepository.findAllByOwnerIdOrderByCreatedAtDesc(currentUser.getId());
         return packMapper.toShortDtoList(packs);
+    }
+
+    /**
+     * Получить список платформ для конкретного пака текущего пользователя.
+     */
+    @Transactional(readOnly = true)
+    public List<PackPlatformDto> getPlatformsForPack(Long packId, User currentUser) {
+        // проверяем, что пак принадлежит пользователю (и существует)
+        Pack pack = findPackOwnedByUserOrThrow(packId, currentUser);
+
+        // Можно использовать либо pack.getPlatforms(), либо репозиторий.
+        // Так как у нас уже есть связь OneToMany, достаточно коллекции из сущности.
+        return pack.getPlatforms().stream()
+                .map(packMapper::toPlatformDto)
+                .toList();
+
+        // Альтернатива через репозиторий (если вдруг коллекция лениво не загружается):
+        // List<PackPlatform> platforms = packPlatformRepository.findAllByPackId(pack.getId());
+        // return platforms.stream()
+        //         .map(packMapper::toPlatformDto)
+        //         .toList();
+    }
+
+    /**
+     * Обновить состояние платформы для пака текущего пользователя.
+     */
+    @Transactional
+    public PackPlatformDto updatePackPlatform(Long platformId, User currentUser, PackPlatformUpdateRequest request) {
+        // Загружаем платформу
+        PackPlatform platform = packPlatformRepository.findById(platformId)
+                .orElseThrow(() -> new IOException("Pack platform not found: id=" + platformId));
+
+        Pack pack = platform.getPack();
+        if (!pack.getOwner().getId().equals(currentUser.getId())) {
+            // Поведение как и в других методах — NotFound вместо Forbidden,
+            // чтобы не светить существование чужих паков.
+            throw new IOException("Pack platform not found for current user: id=" + platformId);
+        }
+
+        // Обновляем поле состояния
+        platform.setStatus(request.getStatus());
+        platform.setPlannedDateTime(request.getPlannedDateTime());
+        platform.setPublishedDateTime(request.getPublishedDateTime());
+        platform.setNotes(request.getNotes());
+
+        // Сохраняем изменения
+        PackPlatform saved = packPlatformRepository.save(platform);
+
+        // Маппим в DTO
+        return packMapper.toPlatformDto(saved);
     }
 
     /**
@@ -131,6 +182,29 @@ public class PackService {
         PackTask saved = packTaskRepository.save(task);
         return packMapper.toTaskDto(saved);
     }
+
+    /**
+     * Найти паки текущего пользователя для отображения в календаре
+     * в заданном диапазоне дат (from/to включительно).
+     */
+    @Transactional(readOnly = true)
+    public List<PackShortDto> getPacksForCalendar(User currentUser, LocalDate from, LocalDate to) {
+        Long ownerId = currentUser.getId();
+
+        // интервал [from; to] включительно, в терминах LocalDateTime
+        LocalDateTime fromDateTime = from.atStartOfDay();
+        LocalDateTime toDateTime = to.plusDays(1).atStartOfDay().minusNanos(1);
+
+        List<Pack> packs = packRepository
+                .findAllByOwnerIdAndPlannedReleaseAtBetweenOrderByPlannedReleaseAtAsc(
+                        ownerId,
+                        fromDateTime,
+                        toDateTime
+                );
+
+        return packMapper.toShortDtoList(packs);
+    }
+
 
     // ------------------------------------------------------------------------
     // Вспомогательные методы

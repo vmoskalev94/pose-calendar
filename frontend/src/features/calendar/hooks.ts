@@ -11,7 +11,7 @@ import type {
     UpsertPostDraftRequest,
 } from './model';
 import {
-    fetchReleases,
+    fetchReleasesForCalendar,
     fetchRelease,
     createRelease,
     updateRelease,
@@ -38,26 +38,11 @@ export const releaseDetailsKey = (releaseId: number, ownerId: number) =>
  * Hook для загрузки релизов за диапазон дат.
  * Используется в календаре для отображения релизов месяца.
  */
-export function useReleasesQuery(
-    ownerId: number | null,
-    from: string, // YYYY-MM-DD
-    to: string, // YYYY-MM-DD
-    enabled = true
-) {
-    return useQuery<ReleaseDto[]>({
-        queryKey:
-            ownerId != null
-                ? releasesRangeKey(ownerId, from, to)
-                : [...RELEASES_QUERY_KEY, 'range', 'empty'],
-        queryFn: () => {
-            if (ownerId == null) {
-                throw new Error('ownerId is null');
-            }
-            return fetchReleases(ownerId, from, to);
-        },
-        enabled: enabled && ownerId != null,
-        // Кэшируем на 5 минут
-        staleTime: 5 * 60 * 1000,
+export function useReleasesQuery(from: string, to: string) {
+    return useQuery<ReleaseDto[], Error>({
+        queryKey: ['calendar', 'releases', { from, to }],
+        queryFn: () => fetchReleasesForCalendar(from, to),
+        enabled: Boolean(from && to),
     });
 }
 

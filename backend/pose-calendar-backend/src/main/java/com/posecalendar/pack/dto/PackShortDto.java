@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -34,6 +35,8 @@ public class PackShortDto {
     private Instant createdAt;
 
     private Instant updatedAt;
+
+    private LocalDateTime plannedReleaseAt;
 
     /**
      * Для прогресса чек-листа.

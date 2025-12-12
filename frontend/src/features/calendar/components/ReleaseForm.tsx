@@ -52,7 +52,7 @@ const ReleaseForm = ({
     );
     const [notes, setNotes] = useState(initialValues?.notes ?? '');
     const [status, setStatus] = useState<ReleaseStatus>(
-        initialValues?.status ?? 'PLANNED'
+        initialValues?.status ?? 'READY_FOR_RELEASE' //     {/*DRAFT*/}
     );
 
     // Загружаем список паков для Select

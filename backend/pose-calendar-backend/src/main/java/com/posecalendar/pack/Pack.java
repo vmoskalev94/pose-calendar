@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +69,12 @@ public class Pack {
     @Column(name = "status", nullable = false, length = 32)
     private PackStatus status;
 
+    @Column(name = "planned_release_at")
+    private LocalDateTime plannedReleaseAt;
+
+    @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PackPlatform> platforms = new ArrayList<>();
+
     /**
      * Примерное количество поз.
      */
@@ -123,4 +130,15 @@ public class Pack {
         tasks.remove(task);
         task.setPack(null);
     }
+
+    public void addPlatform(PackPlatform platform) {
+        platforms.add(platform);
+        platform.setPack(this);
+    }
+
+    public void removePlatform(PackPlatform platform) {
+        platforms.remove(platform);
+        platform.setPack(null);
+    }
+
 }

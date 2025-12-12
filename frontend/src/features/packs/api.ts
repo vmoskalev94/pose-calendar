@@ -3,10 +3,14 @@ import {httpClient, API_BASE_URL} from '../../shared/api/httpClient';
 import type {
     PackCreateRequest,
     PackDetails,
-    PackShort,
     PackTask,
     PackTaskUpdateRequest,
     PackUpdateRequest,
+    PackPlatform,
+    PackPlatformUpdatePayload,
+    PackPostDraft,
+    PackPostDraftPayload,
+    PackShort,
 } from './model';
 
 import type {PackFile, PackFileType} from './model';
@@ -101,5 +105,51 @@ export async function fetchPackFileBlob(fileId: string): Promise<Blob> {
 
 export function getPackFileDownloadUrl(fileId: string): string {
     return `${API_BASE_URL}/api/packs/files/${fileId}`;
+}
+
+/**
+ * Паки для календаря в диапазоне дат [from; to], формат YYYY-MM-DD.
+ */
+export async function fetchPacksForCalendar(from: string, to: string): Promise<PackShort[]> {
+    const response = await httpClient.get<PackShort[]>('/api/packs/calendar', {
+        params: { from, to },
+    });
+    return response.data;
+}
+
+/**
+ * Платформы для конкретного пака.
+ */
+export async function fetchPackPlatforms(packId: number): Promise<PackPlatform[]> {
+    const response = await httpClient.get<PackPlatform[]>(`/api/packs/${packId}/platforms`);
+    return response.data;
+}
+
+/**
+ * Обновить состояние платформы пака.
+ */
+export async function updatePackPlatform(
+    platformId: number,
+    payload: PackPlatformUpdatePayload,
+): Promise<PackPlatform> {
+    const response = await httpClient.put<PackPlatform>(
+        `/api/packs/platforms/${platformId}`,
+        payload,
+    );
+    return response.data;
+}
+
+/**
+ * Создать/обновить черновик поста для платформы.
+ */
+export async function upsertPackPostDraft(
+    platformId: number,
+    payload: PackPostDraftPayload,
+): Promise<PackPostDraft> {
+    const response = await httpClient.put<PackPostDraft>(
+        `/api/packs/platforms/${platformId}/post-draft`,
+        payload,
+    );
+    return response.data;
 }
 

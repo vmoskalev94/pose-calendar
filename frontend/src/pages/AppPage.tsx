@@ -8,7 +8,7 @@ import ReleaseForm, {type ReleaseFormValues} from '../features/calendar/componen
 import ReleaseDetailsModal from '../features/calendar/components/ReleaseDetailsModal';
 import {useAuth} from '../features/auth/AuthContext';
 import {useCreateReleaseMutation} from '../features/calendar/hooks';
-import type {CreateReleaseRequest} from '../features/calendar/model';
+import type {CreateReleaseRequest, ReleaseStatus} from '../features/calendar/model';
 
 const AppPage = () => {
     const {user} = useAuth();
@@ -50,6 +50,8 @@ const AppPage = () => {
         });
     };
 
+    const [status] = useState<ReleaseStatus>('READY_FOR_RELEASE');
+
     return (
         <AppLayout>
             <Box
@@ -87,7 +89,7 @@ const AppPage = () => {
                             title: '',
                             releaseDateTime: selectedDate,
                             notes: '',
-                            status: 'PLANNED',
+                            status: status,
                         }}
                         onSubmit={handleCreateReleaseSubmit}
                         onCancel={handleCloseCreateModal}

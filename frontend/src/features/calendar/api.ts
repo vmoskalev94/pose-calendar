@@ -1,7 +1,6 @@
 // src/features/calendar/api.ts
 import {httpClient} from '../../shared/api/httpClient';
 import type {
-    ReleaseDto,
     CreateReleaseRequest,
     UpdateReleaseRequest,
     ReleasePlatformDto,
@@ -10,21 +9,28 @@ import type {
     PostDraftDto,
     UpsertPostDraftRequest,
 } from './model';
+import {fetchPacksForCalendar} from '../packs/api';
+import type {PackShort} from '../packs/model';
+import type {ReleaseDto} from './model';
 
-/**
- * Получить релизы за диапазон дат.
- * Backend endpoint: GET /api/releases?ownerId=X&from=YYYY-MM-DD&to=YYYY-MM-DD
- */
-export async function fetchReleases(
-    ownerId: number,
-    from: string, // YYYY-MM-DD format
-    to: string // YYYY-MM-DD format
+export async function fetchReleasesForCalendar(
+    from: string,
+    to: string,
 ): Promise<ReleaseDto[]> {
-    const {data} = await httpClient.get<ReleaseDto[]>('/api/releases', {
-        params: {ownerId, from, to},
-    });
-    return data;
+    const packs: PackShort[] = await fetchPacksForCalendar(from, to);
+
+    return packs.map((pack) => ({
+        id: pack.id,
+        packId: pack.id,
+        packName: pack.titleRu || pack.titleEn || 'Без названия',
+        title: pack.titleRu || pack.titleEn || 'Без названия',
+        releaseDateTime: pack.plannedReleaseAt ?? null,
+        status: pack.status,
+        notes: null,           // пока notes = null, если нужно – потом возьмём из pack.description
+        platforms: [],         // позже сюда придут PackPlatform → ReleasePlatformDto
+    }));
 }
+
 
 /**
  * Получить один релиз по ID.

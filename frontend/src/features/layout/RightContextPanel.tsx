@@ -51,7 +51,7 @@ const RightContextPanel = () => {
         data: releases,
         isLoading: releasesLoading,
         isError: releasesError,
-    } = useReleasesQuery(user?.id ?? null, from, to);
+    } = useReleasesQuery(from, to);
     const createReleaseMutation = useCreateReleaseMutation(user?.id ?? null);
 
     const handleOpenPack = (id: number) => {

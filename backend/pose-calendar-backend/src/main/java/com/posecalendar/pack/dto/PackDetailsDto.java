@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -42,6 +43,8 @@ public class PackDetailsDto {
     private Instant createdAt;
 
     private Instant updatedAt;
+
+    private LocalDateTime plannedReleaseAt;
 
     private List<PackTaskDto> tasks;
 }

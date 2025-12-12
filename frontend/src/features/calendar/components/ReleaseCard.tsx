@@ -2,8 +2,7 @@
 import {Badge, Card, Group, Stack, Text} from '@mantine/core';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
-import type {ReleaseDto} from '../model';
-import {RELEASE_STATUS_COLORS} from '../model';
+import {RELEASE_STATUS_COLORS, RELEASE_STATUS_LABELS, type ReleaseDto} from '../model';
 
 interface ReleaseCardProps {
     release: ReleaseDto;
@@ -30,13 +29,9 @@ const formatReleaseDate = (dateTimeString: string): string => {
     }
 };
 
+
 const ReleaseCard = ({release, onClick}: ReleaseCardProps) => {
-    const statusLabel = {
-        PLANNED: 'Запланирован',
-        CONTENT_READY: 'Контент готов',
-        POSTED: 'Опубликован',
-        CANCELLED: 'Отменен',
-    }[release.status];
+    const statusLabel = RELEASE_STATUS_LABELS[release.status];
 
     return (
         <Card
@@ -60,7 +55,7 @@ const ReleaseCard = ({release, onClick}: ReleaseCardProps) => {
                 {/* Дата и статус */}
                 <Group justify="space-between" align="center">
                     <Text size="xs" c="dimmed">
-                        {formatReleaseDate(release.releaseDateTime)}
+                        {release.releaseDateTime ? formatReleaseDate(release.releaseDateTime) : '—'} {/*''*/}
                     </Text>
                     <Badge size="xs" color={RELEASE_STATUS_COLORS[release.status]}>
                         {statusLabel}

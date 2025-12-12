@@ -1,11 +1,8 @@
 // src/features/calendar/model.ts
+// src/features/calendar/model.ts
+import type {PackStatus} from '../packs/model';
 
-// Статусы релиза (синхронизированы с backend)
-export type ReleaseStatus =
-    | 'PLANNED'
-    | 'CONTENT_READY'
-    | 'POSTED'
-    | 'CANCELLED';
+export type ReleaseStatus = PackStatus;
 
 // Статус платформы релиза
 export type ReleasePlatformStatus =
@@ -46,7 +43,7 @@ export interface ReleaseDto {
     packId: number;
     packName: string;
     title: string;
-    releaseDateTime: string; // ISO-8601 LocalDateTime: "2025-12-25T18:30:00"
+    releaseDateTime: string | null;
     status: ReleaseStatus;
     notes: string | null;
     platforms: ReleasePlatformDto[];
@@ -96,16 +93,18 @@ export interface CalendarDay {
 
 // Лейблы для статусов (для UI)
 export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = {
-    PLANNED: 'Запланирован',
-    CONTENT_READY: 'Готов',
-    POSTED: 'Опубликован',
-    CANCELLED: 'Отменён',
+    DRAFT: 'Черновик',
+    IN_PROGRESS: 'В работе',
+    READY_FOR_RELEASE: 'Готов к релизу',
+    RELEASED: 'Выпущен',
+    ARCHIVED: 'Архив',
 };
 
 // Цвета для статусов (Mantine colors)
 export const RELEASE_STATUS_COLORS: Record<ReleaseStatus, string> = {
-    PLANNED: 'blue',
-    CONTENT_READY: 'yellow',
-    POSTED: 'green',
-    CANCELLED: 'red',
+    DRAFT: 'gray',
+    IN_PROGRESS: 'yellow',
+    READY_FOR_RELEASE: 'blue',
+    RELEASED: 'green',
+    ARCHIVED: 'dark',
 };

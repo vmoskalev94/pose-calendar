@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class PackCreateRequest {
@@ -24,6 +26,11 @@ public class PackCreateRequest {
 
     @NotNull
     private PackType packType;
+
+    /**
+     * Опциональная планируемая дата/время релиза пака.
+     */
+    private LocalDateTime plannedReleaseAt;
 
     @PositiveOrZero
     private Integer posesCount;

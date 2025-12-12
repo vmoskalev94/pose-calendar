@@ -1,10 +1,6 @@
 package com.posecalendar.pack;
 
-import com.posecalendar.pack.dto.PackCreateRequest;
-import com.posecalendar.pack.dto.PackDetailsDto;
-import com.posecalendar.pack.dto.PackShortDto;
-import com.posecalendar.pack.dto.PackTaskDto;
-import com.posecalendar.pack.dto.PackUpdateRequest;
+import com.posecalendar.pack.dto.*;
 import com.posecalendar.user.User;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +22,7 @@ public class PackMapper {
                 .titleRu(pack.getTitleRu())
                 .titleEn(pack.getTitleEn())
                 .packType(pack.getPackType())
+                .plannedReleaseAt(pack.getPlannedReleaseAt())
                 .status(pack.getStatus())
                 .posesCount(pack.getPosesCount())
                 .allInOne(pack.isAllInOne())
@@ -56,6 +53,7 @@ public class PackMapper {
                 .requirements(pack.getRequirements())
                 .createdAt(pack.getCreatedAt())
                 .updatedAt(pack.getUpdatedAt())
+                .plannedReleaseAt(pack.getPlannedReleaseAt())
                 .tasks(
                         pack.getTasks().stream()
                                 .map(this::toTaskDto)
@@ -95,6 +93,7 @@ public class PackMapper {
                 .hashtags(request.getHashtags())
                 .requirements(request.getRequirements())
                 .status(initialStatus)
+                .plannedReleaseAt(request.getPlannedReleaseAt())
                 .build();
     }
 
@@ -110,6 +109,36 @@ public class PackMapper {
         pack.setAllInOne(Boolean.TRUE.equals(request.getAllInOne()));
         pack.setHashtags(request.getHashtags());
         pack.setRequirements(request.getRequirements());
+        pack.setPlannedReleaseAt(request.getPlannedReleaseAt());
         pack.setStatus(request.getStatus());
+    }
+
+    /**
+     * Преобразование сущности PackPlatform в DTO.
+     * Пока без черновика (postDraft) — его добавим позже, когда перенесём PostDraft на PackPlatform.
+     */
+    public PackPlatformDto toPlatformDto(PackPlatform platform) {
+        if (platform == null) {
+            return null;
+        }
+
+        return PackPlatformDto.builder()
+                .id(platform.getId())
+                .packId(platform.getPack() != null ? platform.getPack().getId() : null)
+                .platform(platform.getPlatform())
+                .status(platform.getStatus())
+                .plannedDateTime(platform.getPlannedDateTime())
+                .publishedDateTime(platform.getPublishedDateTime())
+                .notes(platform.getNotes())
+                .createdAt(platform.getCreatedAt())
+                .updatedAt(platform.getUpdatedAt())
+                .postDraft(null) // временно null — позже сюда придёт PackPostDraftDto
+                .build();
+    }
+
+    public List<PackPlatformDto> toPlatformDtoList(List<PackPlatform> platforms) {
+        return platforms.stream()
+                .map(this::toPlatformDto)
+                .toList();
     }
 }

@@ -33,10 +33,10 @@ import {
     useUpsertReleasePlatformMutation,
 } from '../hooks';
 import type {UpdateReleaseRequest, Platform} from '../model';
-import {RELEASE_STATUS_COLORS} from '../model';
 import ReleaseForm, {type ReleaseFormValues} from './ReleaseForm';
 import ReleasePlatformCard from './ReleasePlatformCard';
 import PostDraftForm, {type PostDraftFormValues} from './PostDraftForm';
+import {RELEASE_STATUS_COLORS, RELEASE_STATUS_LABELS} from '../model';
 
 interface ReleaseDetailsModalProps {
     releaseId: number | null;
@@ -44,18 +44,12 @@ interface ReleaseDetailsModalProps {
     onClose: () => void;
 }
 
-const statusLabelMap = {
-    PLANNED: 'Запланирован',
-    CONTENT_READY: 'Контент готов',
-    POSTED: 'Опубликован',
-    CANCELLED: 'Отменен',
-};
-
 const ReleaseDetailsModal = ({
-                                  releaseId,
-                                  opened,
-                                  onClose,
-                              }: ReleaseDetailsModalProps) => {
+                                 releaseId,
+                                 opened,
+                                 onClose,
+                             }: ReleaseDetailsModalProps) => {
+
     const {user} = useAuth();
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedPlatformId, setSelectedPlatformId] = useState<number | null>(null);
@@ -213,7 +207,7 @@ const ReleaseDetailsModal = ({
                                     size="sm"
                                     color={RELEASE_STATUS_COLORS[release.status]}
                                 >
-                                    {statusLabelMap[release.status]}
+                                    {RELEASE_STATUS_LABELS[release.status]}
                                 </Badge>
                                 <Group gap={6}>
                                     <Button

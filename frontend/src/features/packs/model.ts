@@ -7,6 +7,34 @@ export type PackStatus =
     | 'RELEASED'
     | 'ARCHIVED';
 
+export type PackPlatformStatus = 'PLANNED' | 'DRAFT_PREPARED' | 'PUBLISHED';
+
+export type Platform = 'TELEGRAM' | 'VK' | 'BOOSTY' | 'TUMBLR';
+
+export interface PackPostDraft {
+    id: number;
+    packPlatformId: number;
+    title?: string | null;
+    body?: string | null;
+    hashtags?: string | null;
+    language?: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface PackPlatform {
+    id: number;
+    packId: number;
+    platform: Platform;
+    status: PackPlatformStatus;
+    plannedDateTime?: string | null;
+    publishedDateTime?: string | null;
+    notes?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    postDraft?: PackPostDraft | null;
+}
+
 export type PackType = 'SOLO' | 'COUPLE' | 'GROUP' | 'MIXED';
 
 export type PackTaskType =
@@ -40,6 +68,7 @@ export interface PackShort {
     allInOne: boolean;
     createdAt: string;
     updatedAt: string;
+    plannedReleaseAt?: string | null;
     completedTasks: number;
     totalTasks: number;
 }
@@ -48,8 +77,9 @@ export interface PackDetails extends PackShort {
     description: string | null;
     hashtags: string | null;
     requirements: string | null;
-    // backend может вернуть задачи и в деталях
+    plannedReleaseAt?: string | null;
     tasks?: PackTask[];
+    // platforms?: PackPlatform[];
 }
 
 export interface PackCreateRequest {
@@ -110,3 +140,16 @@ export const PACK_FILE_TYPE_ORDER: PackFileType[] = [
     'EXTRA',
 ];
 
+export interface PackPlatformUpdatePayload {
+    status: PackPlatformStatus;
+    plannedDateTime?: string | null;
+    publishedDateTime?: string | null;
+    notes?: string | null;
+}
+
+export interface PackPostDraftPayload {
+    title?: string | null;
+    body?: string | null;
+    hashtags?: string | null;
+    language?: string | null;
+}

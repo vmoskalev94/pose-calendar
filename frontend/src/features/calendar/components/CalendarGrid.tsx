@@ -3,7 +3,6 @@ import {useState, useMemo} from 'react';
 import {Alert, Box, Center, Loader, SimpleGrid, Stack, Text} from '@mantine/core';
 import {IconAlertCircle} from '@tabler/icons-react';
 import dayjs from 'dayjs';
-import {useAuth} from '../../auth/AuthContext';
 import {useReleasesQuery} from '../hooks';
 import type {CalendarDay, ReleaseDto} from '../model';
 import CalendarHeader from './CalendarHeader';
@@ -68,7 +67,6 @@ interface CalendarGridProps {
 }
 
 const CalendarGrid = ({onCreateRelease, onViewRelease}: CalendarGridProps) => {
-    const {user} = useAuth();
     const [currentDate, setCurrentDate] = useState(new Date());
 
     // Извлекаем год и месяц
@@ -80,11 +78,7 @@ const CalendarGrid = ({onCreateRelease, onViewRelease}: CalendarGridProps) => {
     const to = dayjs(new Date(year, month + 1, 0)).format('YYYY-MM-DD'); // Последний день месяца
 
     // Загружаем релизы за месяц
-    const {
-        data: releases,
-        isLoading,
-        isError,
-    } = useReleasesQuery(user?.id ?? null, from, to);
+    const { data: releases, isLoading, isError } = useReleasesQuery(from, to);
 
     // Генерируем массив дней календаря
     const calendarDays = useMemo(() => {
